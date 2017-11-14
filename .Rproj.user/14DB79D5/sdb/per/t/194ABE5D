@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "library('shiny')\nlibrary('mice')\nlibrary(RSkittleBrewer)\nlibrary(magrittr)\nlibrary(dplyr)\nlibrary(markdown)\n\nload('model/pooled-model.Rdata')\n\nshinyServer(function(input, output, session) {\n\n  predicted_prob <- reactive({\n    predict_pooled(betas = pooledModel$qbar,\n                           covariance = pooledModel$t, preopventilat = input$preopventilat,\n                           preopsepsis = input$preopsepsis, fsteroid = input$fsteroid,\n                           prwbcf = input$prwbcf, prplatef = input$prplatef, prcreat = input$prcreat, numage = input$numage)\n\n\n  })\n\n\n  plot_data <- reactive({\n\n    n_points <- 100\n    age_ranges <- seq(19, 91, length.out = n_points)\n\n    res <- do.call(rbind, lapply(age_ranges,\n                                 function(i, b, c, v, s, f, w, p, cr) predict_pooled(numage = i, betas = b, covariance = c,\n                                                                                     preopventilat = v, preopsepsis = s, fsteroid = f,\n                                                                                     prwbcf = w, prplatef = p, prcreat = cr),\n                                 b = pooledModel$qbar, c = pooledModel$t,\n                                 v = input$preopventilat,\n                                 s = input$preopsepsis, f = input$fsteroid,\n                                 w = input$prwbcf, p = input$prplatef, cr = input$prcreat))\n\n    res\n  })\n\n\n  # Generate an HTML table view of the data ----\n  output$table <- renderTable({\n    summary(pooledModel)\n  })\n\n  output$print_pred = renderPrint({\n    sprintf(\"Probability of mortality: %.2f,\\n 95%% Confidence Interval: [%.2f, %.2f]\",\n            predicted_prob()[,\"prob\"],predicted_prob()[,\"lower\"],predicted_prob()[,\"upper\"])\n\n    # predicted_prob()\n    # predicted_prob[,\"prob\"]\n\n    # input$preopventilat\n\n  })\n\n\n  output$prob1 <- renderText({\n    paste(\"Probability of mortality:\",round(predicted_prob()[,\"prob\"],3))\n  })\n\n  output$CI <- renderText({\n    paste(\"95% Confidence Interval: [\",round(predicted_prob()[,\"lower\"],3), \", \",round(predicted_prob()[,\"upper\"],3) ,\"]\")\n  })\n\n\n\n  output$plot <- renderPlot({\n\n    trop <- RSkittleBrewer::RSkittleBrewer(\"trop\")\n\n    par(mai=c(0.85,0.9,0.1,0.2))\n    # par(oma = c(4, 1, 1, 1))\n    plot(plot_data()[,\"numage\"], plot_data()[,\"prob\"], lwd = 4, type = \"l\", ylab = \"Probability of Death\", xlab = \"Age\", col = trop[2],\n         bty=\"n\", xaxt=\"n\", cex.lab = 1.4, xlim = c(20,100), ylim = range(plot_data()[,c(\"prob\",\"lower\",\"upper\")]))\n    axis(1, labels = T, at = seq(20,90,10))\n    lines(plot_data()[,\"numage\"], plot_data()[,\"lower\"], lty = 2, col = \"grey\")\n    lines(plot_data()[,\"numage\"], plot_data()[,\"upper\"], lty = 2, col = \"grey\")\n    points(x = input$numage,y = predicted_prob()[,\"prob\"],  pch = 19, col = \"red\", cex = 2)\n\n  })\n\n\n})\n",
+    "created" : 1503090607703.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "126724617",
+    "id" : "194ABE5D",
+    "lastKnownWriteTime" : 1503090826,
+    "last_content_update" : 1503090826580,
+    "path" : "~/Dropbox/consulting/maria/cdiff/server.R",
+    "project_path" : "server.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

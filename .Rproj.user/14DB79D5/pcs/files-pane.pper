@@ -1,0 +1,13 @@
+{
+    "path" : "~/Dropbox/consulting/maria/cdiff",
+    "sortOrder" : [
+        {
+            "ascending" : false,
+            "columnIndex" : 4
+        },
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}
